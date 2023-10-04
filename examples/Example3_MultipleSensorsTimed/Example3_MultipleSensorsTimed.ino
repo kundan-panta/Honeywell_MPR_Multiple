@@ -17,6 +17,12 @@ SparkFun_MicroPressure mpr2(-1, -1, 0, 1);
 uint32_t p1 = 0;
 uint32_t p2 = 0;
 
+// For timing
+#define SENSOR_RATE_HZ 100.
+const int sensor_period_ms = 1000. / SENSOR_RATE_HZ;
+uint32_t T_s = 0;
+bool mpr_requested = false;  // Flag to tell if the sensors have been sent a request command
+
 
 void setup() {
   Serial.begin(115200);
@@ -40,21 +46,24 @@ void setup() {
 }
 
 void loop() {
-  // Request pressure
-  mpr1.requestPressure();
-  mpr2.requestPressure();
-  
-  // Wait till sensors are ready
-  while (!mpr1.sensorReady());
-  while (!mpr2.sensorReady());
+  // Run sensors at desired frequency, alternating between requests and reading
+  if (!mpr_requested && millis() - T_s >= sensor_period_ms) {
+    // Request pressure
+    T_s += sensor_period_ms;  // Update last sample time
+    mpr_requested = true;
+    mpr1.requestPressure();
+    mpr2.requestPressure();
+  }
+  else if (mpr_requested && mpr1.sensorReady() && mpr2.sensorReady()) {
+    // Read sensors
+    mpr_requested = false;
+    p1 = mpr1.readPressureRaw();
+    p2 = mpr2.readPressureRaw();
 
-  // Read sensors (raw)
-  p1 = mpr1.readPressureRaw();
-  p2 = mpr2.readPressureRaw();
-
-  // Print readings
-  Serial.print(p1);
-  Serial.print(",");
-  Serial.print(p2);
-  Serial.println();
+    // Print readings
+    Serial.print(p1);
+    Serial.print(",");
+    Serial.print(p2);
+    Serial.println();
+  }
 }

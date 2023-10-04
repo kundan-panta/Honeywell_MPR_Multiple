@@ -31,7 +31,7 @@ SparkFun_MicroPressure::SparkFun_MicroPressure(int8_t eoc_pin, int8_t rst_pin, u
   
   - Returns 0/1: 0: sensor not found, 1: sensor connected
 */
-bool SparkFun_MicroPressure::begin(uint8_t deviceAddress, TwoWire &wirePort, uint16_t tDelay, bool returnFlags)
+bool SparkFun_MicroPressure::begin(uint8_t deviceAddress, TwoWire &wirePort, bool returnFlags, uint16_t tDelay)
 {
   _address = deviceAddress;
   _i2cPort = &wirePort;

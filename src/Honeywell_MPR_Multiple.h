@@ -35,7 +35,7 @@ class SparkFun_MicroPressure
 {
   public:
     SparkFun_MicroPressure(int8_t eoc_pin=-1, int8_t rst_pin=-1, uint8_t minimumPSI=MINIMUM_PSI, uint8_t maximumPSI=MAXIMUM_PSI);
-    bool begin(uint8_t deviceAddress=DEFAULT_ADDRESS, TwoWire &wirePort=Wire, uint16_t tDelay=REQUEST_WAIT_MUS, bool returnFlags=false);
+    bool begin(uint8_t deviceAddress=DEFAULT_ADDRESS, TwoWire &wirePort=Wire, bool returnFlags=false, uint16_t tDelay=REQUEST_WAIT_MUS);
     uint8_t readStatus(void);
     float readPressure(Pressure_Units units=PSI);
 

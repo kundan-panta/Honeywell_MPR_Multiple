@@ -44,7 +44,7 @@ class SparkFun_MicroPressure
     void requestPressure();
     uint32_t readPressureRaw();
     bool sensorReady();
-    float convertToUnits();
+    float convertToUnits(uint32_t pRaw);
     
   private:
     int8_t _address;

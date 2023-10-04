@@ -52,6 +52,9 @@ bool SparkFun_MicroPressure::begin(uint8_t deviceAddress, TwoWire &wirePort)
 
   uint8_t error = _i2cPort->endTransmission();
 
+  // New
+  _tRequest = 0;  // Initialize request time
+
   if(error == 0) return true;
   else           return false;
 }
@@ -149,7 +152,7 @@ void SparkFun_MicroPressure::requestPressure() {
   _i2cPort->endTransmission();
 
   // Update time of request
-  tRequest = micros();
+  _tRequest = micros();
 }
 
 uint32_t SparkFun_MicroPressure::readPressureRaw() {
@@ -157,21 +160,15 @@ uint32_t SparkFun_MicroPressure::readPressureRaw() {
 
   uint8_t status = _i2cPort->read();
 
-  // check memory integrity and math saturation bits
-  if (status & BUSY_FLAG) {
-    // return 1;
-  }
-  if (status & INTEGRITY_FLAG) {
-    // return 2;
-  }
-  if (status & MATH_SAT_FLAG) {
-    // return 3;
-  }
-  if (!(status & POWER_FLAG)) {
-    // return 4;
+  // Check if any flags have been raised and return error code instead of pressure
+  if (_returnFlags) {
+    if (status & BUSY_FLAG) return 1;
+    if (status & INTEGRITY_FLAG) return 2;
+    if (status & MATH_SAT_FLAG) return 3;
+    if (status & POWER_FLAG) return 4;
   }
 
-  // read 24-bit pressure
+  // Read 24-bit pressure
   uint32_t reading = 0;
   for (uint8_t i = 0; i < 3; i++) {
     reading |= _i2cPort->read();
@@ -183,6 +180,22 @@ uint32_t SparkFun_MicroPressure::readPressureRaw() {
 }
 
 bool SparkFun_MicroPressure::sensorReady() {
-  if ((micros() - tRequest) > REQUEST_WAIT_MUS) return true;
+  if ((micros() - _tRequest) > _tDelay) return true;
   else return false;
+}
+
+float SparkFun_MicroPressure::convertToUnits(uint32_t pRaw) {
+  // Convert from 24-bit to float psi value
+  float pressure;
+  pressure = (pRaw - OUTPUT_MIN) * (_maxPsi - _minPsi);
+  pressure = (pressure / (OUTPUT_MAX - OUTPUT_MIN)) + _minPsi;
+
+  if(units == PSI)       return pressure; //PSI
+  else if(units == PA)   return pressure*6894.7573; //Pa (Pascal)
+  else if(units == KPA)  return pressure*6.89476;   //kPa (kilopascal)
+  else if(units == TORR) return pressure*51.7149;   //torr (mmHg)
+  else if(units == INHG) return pressure*2.03602;   //inHg (inch of mercury)
+  else if(units == ATM)  return pressure*0.06805;   //atm (atmosphere)
+  else if(units == BAR)  return pressure*0.06895;   //bar
+  else                   return pressure; //PSI
 }

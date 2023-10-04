@@ -54,6 +54,7 @@ bool SparkFun_MicroPressure::begin(uint8_t deviceAddress, TwoWire &wirePort)
 
   // New
   _tRequest = 0;  // Initialize request time
+  _pRaw = 0;      // Initialize raw pressure value
 
   if(error == 0) return true;
   else           return false;
@@ -169,14 +170,14 @@ uint32_t SparkFun_MicroPressure::readPressureRaw() {
   }
 
   // Read 24-bit pressure
-  uint32_t reading = 0;
+  _pRaw = 0;
   for (uint8_t i = 0; i < 3; i++) {
-    reading |= _i2cPort->read();
+    _pRaw |= _i2cPort->read();
     if (i != 2)
-      reading = reading << 8;
+      _pRaw = _pRaw << 8;
   }
 
-  return reading;
+  return _pRaw;
 }
 
 bool SparkFun_MicroPressure::sensorReady() {
@@ -184,10 +185,10 @@ bool SparkFun_MicroPressure::sensorReady() {
   else return false;
 }
 
-float SparkFun_MicroPressure::convertToUnits(uint32_t pRaw) {
+float SparkFun_MicroPressure::convertToUnits(Pressure_Units units) {
   // Convert from 24-bit to float psi value
   float pressure;
-  pressure = (pRaw - OUTPUT_MIN) * (_maxPsi - _minPsi);
+  pressure = (_pRaw - OUTPUT_MIN) * (_maxPsi - _minPsi);
   pressure = (pressure / (OUTPUT_MAX - OUTPUT_MIN)) + _minPsi;
 
   if(units == PSI)       return pressure; //PSI

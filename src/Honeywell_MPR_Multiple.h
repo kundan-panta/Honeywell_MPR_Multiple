@@ -44,7 +44,7 @@ class SparkFun_MicroPressure
     void requestPressure();
     uint32_t readPressureRaw();
     bool sensorReady();
-    float convertToUnits(uint32_t pRaw);
+    float convertToUnits(Pressure_Units units=PSI);
     
   private:
     int8_t _address;
@@ -55,6 +55,7 @@ class SparkFun_MicroPressure
     TwoWire *_i2cPort;
 
     // New variable to keep track of time since request
+    uint32_t _pRaw;
     uint32_t _tRequest;
     uint16_t _tDelay;
     bool _returnFlags;

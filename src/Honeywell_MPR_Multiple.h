@@ -40,6 +40,7 @@ class SparkFun_MicroPressure
     float readPressure(Pressure_Units units=PSI);
 
     // New functions to separate request and read commands
+    // Needed for non-blocking approach to wait for sensor to be ready, instead of querying
     void requestPressure();
     uint32_t readPressureRaw();
     bool sensorReady();

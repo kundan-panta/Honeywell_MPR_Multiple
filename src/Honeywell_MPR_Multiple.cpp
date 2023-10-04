@@ -7,7 +7,7 @@
   Feel like supporting our work? Buy a board from SparkFun!
  */
  
- #include "SparkFun_MicroPressure.h"
+ #include "Honeywell_MPR_Multiple.h"
 
 /* Constructor and sets default values.
    - (Optional) eoc_pin, End of Conversion indicator. Default: -1 (skip)
@@ -133,4 +133,56 @@ float SparkFun_MicroPressure::readPressure(Pressure_Units units)
   else if(units == ATM)  return pressure*0.06805;   //atm (atmosphere)
   else if(units == BAR)  return pressure*0.06895;   //bar
   else                   return pressure; //PSI
+}
+
+/* New function definitions.
+    - requestPressure, requests a new pressure reading from the sensor
+    - readPressureRaw, reads the raw pressure value (as integer) from the sensor
+    - sensorReady, returns true if required wait time has passed since requestPressure
+*/
+
+void SparkFun_MicroPressure::requestPressure() {
+  _i2cPort->beginTransmission(_address);
+  _i2cPort->write((uint8_t)0xAA);
+  _i2cPort->write((uint8_t)0x00);
+  _i2cPort->write((uint8_t)0x00);
+  _i2cPort->endTransmission();
+
+  // Update time of request
+  tRequest = micros();
+}
+
+uint32_t SparkFun_MicroPressure::readPressureRaw() {
+  _i2cPort->requestFrom(_address, 4);
+
+  uint8_t status = _i2cPort->read();
+
+  // check memory integrity and math saturation bits
+  if (status & BUSY_FLAG) {
+    // return 1;
+  }
+  if (status & INTEGRITY_FLAG) {
+    // return 2;
+  }
+  if (status & MATH_SAT_FLAG) {
+    // return 3;
+  }
+  if (!(status & POWER_FLAG)) {
+    // return 4;
+  }
+
+  // read 24-bit pressure
+  uint32_t reading = 0;
+  for (uint8_t i = 0; i < 3; i++) {
+    reading |= _i2cPort->read();
+    if (i != 2)
+      reading = reading << 8;
+  }
+
+  return reading;
+}
+
+bool SparkFun_MicroPressure::sensorReady() {
+  if ((micros() - tRequest) > REQUEST_WAIT_MUS) return true;
+  else return false;
 }

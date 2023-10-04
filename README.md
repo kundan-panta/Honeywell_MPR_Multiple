@@ -1,4 +1,4 @@
-(Modified) SparkFun MicroPressure Arduino Library
+(Modified) SparkFun MicroPressure (MPR) Arduino Library
 ========================================
 
 With the following changes:

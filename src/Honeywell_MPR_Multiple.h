@@ -18,7 +18,7 @@
 #define OUTPUT_MAX 0xE66666
 #define OUTPUT_MIN 0x19999A
 
-// Time (microseconds) to wait after requesting pressure from sensor
+// Time (microseconds) needed after requesting pressure from sensor
 #define REQUEST_WAIT_MUS 9000  // >=5000 according to datasheet
 
 enum Pressure_Units {
@@ -38,12 +38,20 @@ class SparkFun_MicroPressure
     bool begin(uint8_t deviceAddress = DEFAULT_ADDRESS, TwoWire &wirePort = Wire);
     uint8_t readStatus(void);
     float readPressure(Pressure_Units units=PSI);
+
+    // New functions to separate request and read commands
+    void requestPressure();
+    uint32_t readPressureRaw();
+    bool sensorReady();
     
   private:
     int8_t _address;
-	int8_t _eoc, _rst;
+	  int8_t _eoc, _rst;
 	
     uint8_t _minPsi, _maxPsi;
     
     TwoWire *_i2cPort;
+
+    // New variable to keep track of time since request
+    uint32_t tRequest;
 };

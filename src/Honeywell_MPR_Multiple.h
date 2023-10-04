@@ -13,9 +13,13 @@
 #define BUSY_FLAG       0x20
 #define INTEGRITY_FLAG  0x04
 #define MATH_SAT_FLAG   0x01
+#define POWER_FLAG 0x40
 
 #define OUTPUT_MAX 0xE66666
 #define OUTPUT_MIN 0x19999A
+
+// Time (microseconds) to wait after requesting pressure from sensor
+#define REQUEST_WAIT_MUS 9000  // >=5000 according to datasheet
 
 enum Pressure_Units {
   PSI,

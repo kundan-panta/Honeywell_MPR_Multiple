@@ -35,7 +35,7 @@ class SparkFun_MicroPressure
 {
   public:
     SparkFun_MicroPressure(int8_t eoc_pin=-1, int8_t rst_pin=-1, uint8_t minimumPSI=MINIMUM_PSI, uint8_t maximumPSI=MAXIMUM_PSI);
-    bool begin(uint8_t deviceAddress = DEFAULT_ADDRESS, TwoWire &wirePort = Wire);
+    bool begin(uint8_t deviceAddress=DEFAULT_ADDRESS, TwoWire &wirePort=Wire, uint16_t tDelay=REQUEST_WAIT_MUS, bool returnFlags=false);
     uint8_t readStatus(void);
     float readPressure(Pressure_Units units=PSI);
 
@@ -54,9 +54,9 @@ class SparkFun_MicroPressure
     
     TwoWire *_i2cPort;
 
-    // New variable to keep track of time since request
-    uint32_t _pRaw;
-    uint32_t _tRequest;
-    uint16_t _tDelay;
-    bool _returnFlags;
+    // New variables
+    uint32_t _pRaw;  // Raw pressure value
+    uint32_t _tRequest;  // Time of last request
+    uint16_t _tDelay;  // Time (microseconds) needed after requesting pressure from sensor
+    bool _returnFlags; // Return error codes instead of pressure
 };

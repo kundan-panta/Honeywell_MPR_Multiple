@@ -26,13 +26,21 @@ SparkFun_MicroPressure::SparkFun_MicroPressure(int8_t eoc_pin, int8_t rst_pin, u
 /* Initialize hardware
   - deviceAddress, I2C address of the sensor. Default: 0x18
   - wirePort, sets the I2C bus used for communication. Default: Wire
+  - tDelay, sets time (microseconds) needed after requesting pressure from sensor. Default: 9000
+  - returnFlags, if true, readPressureRaw will return error codes instead of pressure. Default: false
   
   - Returns 0/1: 0: sensor not found, 1: sensor connected
 */
-bool SparkFun_MicroPressure::begin(uint8_t deviceAddress, TwoWire &wirePort)
+bool SparkFun_MicroPressure::begin(uint8_t deviceAddress, TwoWire &wirePort, uint16_t tDelay, bool returnFlags)
 {
   _address = deviceAddress;
   _i2cPort = &wirePort;
+
+  // Initialize new variables
+  _pRaw = 0;
+  _tRequest = 0;
+  _tDelay = tDelay;
+  _returnFlags = returnFlags;
   
   if(_eoc != -1)
   {
@@ -51,10 +59,6 @@ bool SparkFun_MicroPressure::begin(uint8_t deviceAddress, TwoWire &wirePort)
   _i2cPort->beginTransmission(_address);
 
   uint8_t error = _i2cPort->endTransmission();
-
-  // New
-  _tRequest = 0;  // Initialize request time
-  _pRaw = 0;      // Initialize raw pressure value
 
   if(error == 0) return true;
   else           return false;

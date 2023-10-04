@@ -25,7 +25,7 @@ void setup() {
   Serial.begin(115200);
   Wire.begin();
 
-  // Check if sensors are functioning
+  // Give I2C addresses and check if sensors are functioning
   bool mpr1_begin = mpr1.begin(I2C_MPR1);
   bool mpr2_begin = mpr2.begin(I2C_MPR2);
 

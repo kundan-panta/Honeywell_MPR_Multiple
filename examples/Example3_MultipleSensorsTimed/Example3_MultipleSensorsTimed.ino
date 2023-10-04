@@ -17,6 +17,10 @@ SparkFun_MicroPressure mpr2(-1, -1, 0, 1);
 uint32_t p1 = 0;
 uint32_t p2 = 0;
 
+// To hold pressure values in desired units
+float p1Units = 0.;
+float p2Units = 0.;
+
 // For timing
 #define SENSOR_RATE_HZ 100.
 const int sensor_period_ms = 1000. / SENSOR_RATE_HZ;
@@ -28,7 +32,7 @@ void setup() {
   Serial.begin(115200);
   Wire.begin();
 
-  // Check if sensors are functioning
+  // Give I2C addresses and check if sensors are functioning
   bool mpr1_begin = mpr1.begin(I2C_MPR1);
   bool mpr2_begin = mpr2.begin(I2C_MPR2);
 
@@ -55,15 +59,19 @@ void loop() {
     mpr2.requestPressure();
   }
   else if (mpr_requested && mpr1.sensorReady() && mpr2.sensorReady()) {
-    // Read sensors
+    // Read sensors (raw)
     mpr_requested = false;
     p1 = mpr1.readPressureRaw();
     p2 = mpr2.readPressureRaw();
 
+    // Convert to units
+    p1Units = mpr1.convertToUnits(PA);
+    p2Units = mpr2.convertToUnits(PA);
+
     // Print readings
-    Serial.print(p1);
+    Serial.print(p1Units);
     Serial.print(",");
-    Serial.print(p2);
+    Serial.print(p2Units);
     Serial.println();
   }
 }

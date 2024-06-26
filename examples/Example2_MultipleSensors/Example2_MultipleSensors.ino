@@ -6,6 +6,7 @@ Kundan Panta | kundan.panta123@gmail.com | 2023-10-03
 #include <Honeywell_MPR_Multiple.h>
 
 // Initialize sensor variables
+// SparkFun_MicroPressure mpr(EOC_PIN, RST_PIN, MIN_PSI, MAX_PSI);
 SparkFun_MicroPressure mpr1(-1, -1, 0, 1);
 SparkFun_MicroPressure mpr2(-1, -1, 0, 1);
 

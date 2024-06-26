@@ -14,7 +14,7 @@
 // Click here to get the library: http://librarymanager/All#SparkFun_MicroPressure
 
 #include<Wire.h>
-#include <SparkFun_MicroPressure.h>
+#include <Honeywell_MPR_Multiple.h>
 
 /*
  * Initialize Constructor

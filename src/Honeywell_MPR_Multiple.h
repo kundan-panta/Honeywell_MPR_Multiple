@@ -19,7 +19,7 @@
 #define OUTPUT_MIN 0x19999A
 
 // Time (microseconds) needed after requesting pressure from sensor
-#define REQUEST_WAIT_MUS 9000  // >=5000 according to datasheet
+#define REQUEST_WAIT_MUS 8000  // >=5000 according to datasheet
 
 enum Pressure_Units {
   PSI,
@@ -58,5 +58,5 @@ class SparkFun_MicroPressure
     uint32_t _pRaw;  // Raw pressure value
     uint32_t _tRequest;  // Time of last request
     uint16_t _tDelay;  // Time (microseconds) needed after requesting pressure from sensor
-    bool _returnFlags; // Return error codes instead of pressure
+    bool _returnFlags; // Return error codes instead of pressure, if there are errors
 };

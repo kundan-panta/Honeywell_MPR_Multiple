@@ -1,68 +1,65 @@
 /*
 Based on example code by SparkFun in their MPR library.
-Kundan Panta | kundan.panta123@gmail.com | 2023-10-03
+Kundan Panta | kundan.panta123@gmail.com | 2024-06-26
 */
 
 #include <Honeywell_MPR_Multiple.h>
 
-// Initialize sensor variables
-// SparkFun_MicroPressure mpr(EOC_PIN, RST_PIN, MIN_PSI, MAX_PSI);
-SparkFun_MicroPressure mpr1(-1, -1, 0, 1);
-SparkFun_MicroPressure mpr2(-1, -1, 0, 1);
-
-// I2C addresses
-#define I2C_MPR1 0x18
-#define I2C_MPR2 0x17
-
-// To hold (raw) pressure values
-uint32_t p1 = 0;
-uint32_t p2 = 0;
-
-// To hold pressure values in desired units
-float p1Units = 0.;
-float p2Units = 0.;
+// Create arrays to hold info for each sensor
+#define NUM_PRESSURE 3  // Number of pressure sensors
+uint8_t mpr_i2c_addr[NUM_PRESSURE] = {0x1B, 0x1C, 0x1F}; // I2C addresses
+uint32_t mpr_p[NUM_PRESSURE];  // To hold (raw) pressure values
+float mpr_p_units[NUM_PRESSURE];  // Pressure in specified units
+SparkFun_MicroPressure* mpr = (SparkFun_MicroPressure*)malloc(sizeof(SparkFun_MicroPressure) * NUM_PRESSURE);  // To call constructor with non-default parameters
 
 void setup() {
   Serial.begin(115200);
   Wire.begin();
+  // Wire.setClock(400000);
 
-  // Give I2C addresses and check if sensors are functioning
-  bool mpr1_begin = mpr1.begin(I2C_MPR1);
-  bool mpr2_begin = mpr2.begin(I2C_MPR2);
-
-  if (!mpr1_begin) {
-    Serial.println("Cannot connect to MPR 1.");
+  // Initialize sensors
+  bool mpr_begin_all = true;
+  for (uint8_t i = 0; i < NUM_PRESSURE; i++) {
+    // Call constructor with desired parameters: EOC_PIN, RST_PIN, MIN_PSI, MAX_PSI
+    mpr[i] = SparkFun_MicroPressure(-1, -1, 0, 1);
+    // Check that sensors are available
+    bool mpr_i_begin = mpr[i].begin(mpr_i2c_addr[i]);
+    if (!mpr_i_begin) {
+      Serial.print("Cannot connect to MPR ");
+      Serial.print(i + 1);
+      Serial.println(".");
+    }
+    mpr_begin_all = mpr_begin_all && mpr_i_begin;
   }
-  if (!mpr2_begin) {
-    Serial.println("Cannot connect to MPR 2.");
-  }
-
-  // Stop if any sensor is not working
-  while (!mpr1_begin || !mpr2_begin) {
-    delay(1000);
-  }
+  while (!mpr_begin_all);
 }
 
 void loop() {
   // Request pressure
-  mpr1.requestPressure();
-  mpr2.requestPressure();
-  
+  for (uint8_t i = 0; i < NUM_PRESSURE; i++) {
+    mpr[i].requestPressure();
+  }
+
   // Wait till sensors are ready
-  while (!mpr1.sensorReady());
-  while (!mpr2.sensorReady());
+  while (true) {
+    // Check if enough time has elapsed since request for all sensors
+    bool mpr_ready_all = true;
+    for (uint8_t i = 0; i < NUM_PRESSURE; i++) {
+      mpr_ready_all = mpr_ready_all && mpr[i].sensorReady();
+    }
+    if (mpr_ready_all) break;
+  }
 
-  // Read sensors (raw)
-  p1 = mpr1.readPressureRaw();
-  p2 = mpr2.readPressureRaw();
-
-  // Convert to units
-  p1Units = mpr1.convertToUnits(PA);
-  p2Units = mpr2.convertToUnits(PA);
+  // Read sensors
+  for (uint8_t i = 0; i < NUM_PRESSURE; i++) {
+    mpr_p[i] = mpr[i].readPressureRaw();
+    mpr_p_units[i] = mpr[i].convertToUnits(PA);  // If wanted, get readings in desired units
+  }
 
   // Print readings
-  Serial.print(p1Units);
-  Serial.print(",");
-  Serial.print(p2Units);
-  Serial.println();
+  for (uint8_t i = 0; i < NUM_PRESSURE; i++) {
+    Serial.print(mpr_p[i]);  // Print raw reading
+    // Serial.print(mpr_p_units[i]);  // Or print in requested units
+    (i == NUM_PRESSURE - 1) ? Serial.println() : Serial.print(",");
+  }
 }

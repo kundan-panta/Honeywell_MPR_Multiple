@@ -23,12 +23,18 @@ void setup() {
   Wire.begin();
   // Wire.setClock(400000);
 
-  // Initialize sensors and check that they are available
+  // Initialize sensors
   bool mpr_begin_all = true;
   for (uint8_t i = 0; i < NUM_PRESSURE; i++) {
-    mpr[i] = SparkFun_MicroPressure(-1, -1, 0, 1);  // Call constructor with desired parameters
+    // Call constructor with desired parameters: EOC_PIN, RST_PIN, MIN_PSI, MAX_PSI
+    mpr[i] = SparkFun_MicroPressure(-1, -1, 0, 1);
+    // Check that sensors are available
     bool mpr_i_begin = mpr[i].begin(mpr_i2c_addr[i]);
-    if (!mpr_i_begin) Serial.printf("Cannot connect to MPR %d.\n", i + 1);
+    if (!mpr_i_begin) {
+      Serial.print("Cannot connect to MPR ");
+      Serial.print(i + 1);
+      Serial.println(".");
+    }
     mpr_begin_all = mpr_begin_all && mpr_i_begin;
   }
   while (!mpr_begin_all);
@@ -63,16 +69,13 @@ void loop() {
       }
       
       // Print readings
-      Serial.print(T_now);  // Time
+      Serial.print(T_now);
       Serial.print(',');
-      Serial.print(mpr_p[0]);  // First sensor
-      // Serial.print(mpr_p_units[0]);  // Or print in requested units instead of raw measurement
-      for (uint8_t i = 1; i < NUM_PRESSURE; i++) {  // Rest of the sensors
-        Serial.print(",");
-        Serial.print(mpr_p[i]);
-        // Serial.print(mpr_p_units[i]);
+      for (uint8_t i = 0; i < NUM_PRESSURE; i++) {
+        Serial.print(mpr_p[i]);  // Print raw reading
+        // Serial.print(mpr_p_units[i]);  // Or print in requested units
+        (i == NUM_PRESSURE - 1) ? Serial.println() : Serial.print(",");
       }
-      Serial.println();
     }
   }
 }
